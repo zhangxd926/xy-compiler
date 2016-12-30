@@ -1,0 +1,101 @@
+vagrant@ubuntu:/vagrant/xy-compiler/src$ make
+bison -d -o syntactic.cpp syntactic.y
+syntactic.y: warning: 22 shift/reduce conflicts [-Wconflicts-sr]
+syntactic.y: warning: 4 reduce/reduce conflicts [-Wconflicts-rr]
+g++ -c `llvm-config --cppflags` -std=c++11 -o syntactic.o syntactic.cpp
+g++ -c `llvm-config --cppflags` -std=c++11 -o gen.o gen.cpp
+g++ -c `llvm-config --cppflags` -std=c++11 -o main.o main.cpp
+flex -o lexical.cpp lexical.l syntactic.hpp
+g++ -c `llvm-config --cppflags` -std=c++11 -o lexical.o lexical.cpp
+g++ -c `llvm-config --cppflags` -std=c++11 -o printi.o printi.cpp
+g++ -o xy-complier syntactic.o gen.o main.o lexical.o printi.o `llvm-config --libs` `llvm-config --ldflags` -lpthread -ldl -lz -lncurses -rdynamic
+
+
+vagrant@ubuntu:/vagrant/xy-compiler/src$ make test
+cat demo.xy | ./xy-complier
+0x1fbce60
+Generating code...
+Generating code for 18NExternDeclaration
+Generating code for 20NFunctionDeclaration
+Creating identifier reference: a
+undeclared variable a
+Creating variable declaration a
+Creating identifier reference: b
+undeclared variable b
+Creating variable declaration b
+Generating code for 16NReturnStatement
+Generating return code for 15NBinaryOperator
+Creating binary operation 268
+Creating identifier reference: b
+Creating identifier reference: a
+Creating block
+Creating function: sum
+Generating code for 20NFunctionDeclaration
+Creating identifier reference: a
+undeclared variable a
+Creating variable declaration a
+Creating identifier reference: b
+undeclared variable b
+Creating variable declaration b
+Generating code for 16NReturnStatement
+Generating return code for 15NBinaryOperator
+Creating binary operation 270
+Creating identifier reference: b
+Creating identifier reference: a
+Creating block
+Creating function: mult
+Generating code for 20NExpressionStatement
+Generating code for 11NMethodCall
+Creating binary operation 269
+Creating integer: 4
+Creating integer: 5
+Creating method call: sum
+Creating integer: 4
+Creating integer: 5
+Creating method call: mult
+Creating method call: printi
+Creating block
+Code is generated.
+; ModuleID = 'main'
+
+define internal void @main() {
+entry:
+  %0 = call i64 @sum(i64 4, i64 5)
+  %1 = call i64 @mult(i64 4, i64 5)
+  %2 = sub i64 %1, %0
+  %3 = call i64 @printi(i64 %2)
+  ret void
+}
+
+declare i64 @printi(i64)
+
+define internal i64 @sum(i64 %a1, i64 %b2) {
+entry:
+  %a = alloca i64
+  %0 = load i64, i64* %a
+  store i64 %a1, i64* %a
+  %b = alloca i64
+  %1 = load i64, i64* %b
+  store i64 %b2, i64* %b
+  %2 = load i64, i64* %b
+  %3 = load i64, i64* %a
+  %4 = add i64 %3, %2
+  ret i64 %4
+}
+
+define internal i64 @mult(i64 %a1, i64 %b2) {
+entry:
+  %a = alloca i64
+  %0 = load i64, i64* %a
+  store i64 %a1, i64* %a
+  %b = alloca i64
+  %1 = load i64, i64* %b
+  store i64 %b2, i64* %b
+  %2 = load i64, i64* %b
+  %3 = load i64, i64* %a
+  %4 = mul i64 %3, %2
+  ret i64 %4
+}
+Running code:
+11
+Exiting...
